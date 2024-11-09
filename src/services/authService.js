@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/prismaClient.js';
+import jwtConfig from '../config/jwt.js';
 import publisher  from '../config/rabbit/publisher.js';
 import User from '../models/User.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 import Response from '../utils/Response.js';
+import Auth from '../utils/Auth.js';
 
 const registerUser = async (email, password, username, name) => {
     try {
@@ -45,7 +47,7 @@ const registerUser = async (email, password, username, name) => {
 
         await publisher.publishUserRegistration(userModel);
         
-        return new Response("200", "User registered successfully", userModel);
+        return userModel;
     } catch (error) {
         return new ErrorResponse("500", error.message);
     }
@@ -62,17 +64,59 @@ const loginUser = async (email, password) => {
             throw new ErrorResponse('400', 'Invalid credentials');
         }
 
-        const token = jwt.sign({ userId: user.id, username: user.username, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        const accessToken = { accessToken: token };
-        return new Response("200", "Success", accessToken);
+        const generateToken = jwtConfig.generateToken(user);
+        const accessToken = jwtConfig.createObjectToken(generateToken);
+        return accessToken;
 
     } catch (error) {
         return new ErrorResponse("500", error.message);
     }
 };
 
+// Fungsi untuk mencari atau membuat pengguna di database menggunakan Prisma
+const findOrCreateUser = async (profile, provider) => {
+    const email = profile.emails ? profile.emails[0].value : null;
+
+    if (!email) {
+        throw new Error("Email tidak ditemukan dalam profil");
+    }
+
+    // Cari pengguna berdasarkan email
+    let user = await prisma.users.findUnique({
+        where: { email },
+    });
+
+    // Jika pengguna tidak ditemukan, buat pengguna baru
+    if (!user) {
+        const passwordGenerate = Auth.generatePassword();
+        const password = await Auth.hashedPassword(passwordGenerate);
+        
+        // Mencari role dengan nama 'member'
+        const role = await prisma.roles.findUnique({
+            where: { role_name: 'member' },
+        });
+        
+        if (!role) {
+            console.log('Role "member" not found');
+        }
+
+        user = await prisma.users.create({
+            data: {
+                email,
+                password,
+                name: profile.name.givenName,
+                password,
+                roles: { connect: { id: role.id } }, // Mengaitkan dengan role menggunakan ID
+            },
+            include: { roles: true } // Menyertakan data role dalam respons
+        });
+    }
+
+    return user;
+};
 
 export default {
     registerUser,
-    loginUser
+    loginUser,
+    findOrCreateUser
 };

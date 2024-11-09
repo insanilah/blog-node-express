@@ -23,7 +23,7 @@ const getUserActivitiesByUsername = async (username) => {
             ...activity._doc,
             timestamp: formatDate.simpleFormatDate(activity.timestamp),
         }));
-        return new Response("200", "User activity retrieved successfully", formattedActivities);
+        return formattedActivities;
     } catch (error) {
         console.error('Error retrieving user activities:', error);
         return new ErrorResponse("500", error.message);
@@ -67,7 +67,7 @@ const aggregateUserActivitiesSortedByDay = async (username) => {
             }
         ]);
 
-        return new Response("200", "Summary user activity retrieved successfully", results);
+        return results;
     } catch (error) {
         console.error("Error aggregating user activities:", error);
         return new ErrorResponse("500", error.message);

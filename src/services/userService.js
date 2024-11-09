@@ -40,12 +40,14 @@ const getAllUsers = async (page, limit, searchTerm) => {
             )
         );
 
-        return new Response("200", "Success", {
+        const userData = {
             currentPage: page,
             totalPages,
             totalUsers,
             users: userModels,
-        });
+        };
+        
+        return userData;
     } catch (error) {
         return new ErrorResponse("500", error.message);
     }
@@ -72,7 +74,7 @@ const getUserById = async (id) => {
             user.roles
         );
 
-        return new Response("200", "Success", userModel);
+        return userModel;
     } catch (error) {
         return new ErrorResponse("500", error.message);
     }

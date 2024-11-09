@@ -1,6 +1,7 @@
 import userActivityService from '../services/userActivityService.js';
 import userService from '../services/userService.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
+import Response from '../utils/Response.js';
 
 const findAllUser = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -13,7 +14,8 @@ const findAllUser = async (req, res) => {
         return res.status(parseInt(response.code)).json(response);
     }
 
-    return res.status(200).json(response);
+    const resp = new Response("200", "Success", response);
+    return res.status(200).json(resp);
 };
 
 const getUserById = async (req, res) => {
@@ -26,7 +28,8 @@ const getUserById = async (req, res) => {
             return res.status(parseInt(response.code)).json(response);
         }
 
-        return res.status(200).json(response);
+        const resp = new Response("200", "Success", response);
+        return res.status(200).json(resp);
     } catch (error) {
         return res.status(500).json(new ErrorResponse("500", error.message));
     }
@@ -41,8 +44,9 @@ const getUserActivitiesByUsername = async (req, res) => {
         if (response instanceof ErrorResponse) {
             return res.status(parseInt(response.code)).json(response);
         }
-
-        return res.status(200).json(response);
+        
+        const resp = new Response("200", "User activity retrieved successfully", response);
+        return res.status(200).json(resp);
     } catch (error) {
         return res.status(500).json(new ErrorResponse("500", error.message));
     }
@@ -57,8 +61,9 @@ const aggregateUserActivitiesSortedByDay = async (req, res) => {
         if (response instanceof ErrorResponse) {
             return res.status(parseInt(response.code)).json(response);
         }
-
-        return res.status(200).json(response);
+        
+        const resp = new Response("200", "Summary user activity retrieved successfully", response);
+        return res.status(200).json(resp);
     } catch (error) {        
         return res.status(500).json(new ErrorResponse("500", error.message));
     }

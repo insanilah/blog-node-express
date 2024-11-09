@@ -1,5 +1,7 @@
 import postService from '../services/postService.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
+import Response from '../utils/Response.js';
+import axios from 'axios';
 
 const createPost = async (req, res) => {
     const { title, content, slug, published, authorId, categoryIds, tagIds } = req.body;
@@ -9,7 +11,8 @@ const createPost = async (req, res) => {
         return res.status(parseInt(response.code)).json(response);
     }
 
-    return res.status(201).json(response);
+    const resp = new Response("201", "Post created successfully", newPost);
+    return res.status(201).json(resp);
 };
 
 const getAllPosts = async (req, res) => {
@@ -27,7 +30,8 @@ const getAllPosts = async (req, res) => {
         return res.status(parseInt(response.code)).json(response);
     }
 
-    return res.status(200).json(response);
+    const resp = new Response("200", "Posts retrieved successfully", response);
+    return res.status(200).json(resp);
 };
 
 const getPostById = async (req, res) => {
@@ -40,7 +44,8 @@ const getPostById = async (req, res) => {
         return res.status(result.status).json({ error: result.message });
     }
 
-    return res.status(200).json(result);
+    const resp = new Response("200", "Post retrieved successfully", result);
+    return res.status(200).json(resp);
 };
 
 const updatePost = async (req, res) => {
@@ -62,7 +67,8 @@ const updatePost = async (req, res) => {
         return res.status(parseInt(response.code)).json(response);
     }
 
-    return res.status(200).json(response);
+    const resp = new Response("200", "Post updated successfully", response);
+    return res.status(200).json(resp);
 };
 
 const deletePost = async (req, res) => {
@@ -74,7 +80,21 @@ const deletePost = async (req, res) => {
         return res.status(result.code).json(result);
     }
 
-    return res.status(200).json(result);
+    const resp = new Response("200", "Post deleted successfully");
+    return res.status(200).json(resp);
+};
+
+const fetchPosts = async (req, res) => {
+    try {
+        const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
+        console.log(response.data);  // Output data yang didapat dari API
+
+        const resp = new Response("200", "Get post external API successfully", response.data);
+        return res.status(200).json(resp);
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        return res.status(500).json("internal server error");
+    }
 };
 
 export default {
@@ -82,5 +102,6 @@ export default {
     getAllPosts,
     updatePost,
     deletePost,
-    getPostById
+    getPostById,
+    fetchPosts
 };

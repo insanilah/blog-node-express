@@ -74,7 +74,7 @@ const createPost = async ({ title, content, slug, published = true, authorId, ca
             await publisher.publishArticleNotification(newPost);
         }
 
-        return new Response("201", "Post created successfully", newPost);
+        return newPost;
     } catch (error) {
         return new ErrorResponse("500", error.message);
     }
@@ -129,7 +129,7 @@ const getAllPosts = async ({ page = 1, pageSize = 10, query = '' }) => {
             );
         });
 
-        return new Response("200", "Posts retrieved successfully", {
+        const postData = {
             posts: postModels,
             pagination: {
                 totalPosts,
@@ -137,7 +137,9 @@ const getAllPosts = async ({ page = 1, pageSize = 10, query = '' }) => {
                 currentPage: page,
                 pageSize
             }
-        });
+        }
+
+        return postData;
     } catch (error) {
         return new ErrorResponse("500", error.message);
     }
@@ -189,7 +191,7 @@ const getPostById = async (postId, req) => {
         // Simpan post ke cache Redis
         await redis.set(`post:${postId}`, JSON.stringify(postModel), 'EX', 3600); // Cache selama 1 jam
 
-        return new Response("200", "Post retrieved successfully", postModel);
+        return postModel;
     } catch (error) {
         console.log("Error:", error);
         return new ErrorResponse("500", error.message);
@@ -280,7 +282,7 @@ const updatePost = async ({ postId, title, content, slug, published, authorId, c
             tags
         );
 
-        return new Response("200", "Post updated successfully", postModel);
+        return postModel;
     } catch (error) {
         console.log("Error:", error)
         return new ErrorResponse("500", error.message);
@@ -300,7 +302,7 @@ const deletePost = async (postId) => {
             where: { id: postId },
         });
 
-        return new Response("200", "Post deleted successfully");
+        return
     } catch (error) {
         console.log("Error:", error);
         return new ErrorResponse("500", error.message);
