@@ -11,7 +11,7 @@ const createPost = async (req, res) => {
         return res.status(parseInt(response.code)).json(response);
     }
 
-    const resp = new Response("201", "Post created successfully", newPost);
+    const resp = new Response("201", "Post created successfully", response);
     return res.status(201).json(resp);
 };
 
